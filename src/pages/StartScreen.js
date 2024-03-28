@@ -244,6 +244,7 @@ const StartScreen = () => {
                                 {renderDigits()}
                             </View>
                         </TouchableOpacity>
+                        
                     </View>
                     <Text style={{ color: '#FFF', fontSize: 12, marginBottom: '1%' }}>hodômetro</Text>
                 </View>
