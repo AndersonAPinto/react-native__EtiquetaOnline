@@ -15,9 +15,8 @@ const StorageManager = ({ onDataRetrieved }) => {
     };
 
     loadData();
-  }, [onDataRetrieved]);
-
-  return null;
+  }, []);
 };
+
 
 export default StorageManager;

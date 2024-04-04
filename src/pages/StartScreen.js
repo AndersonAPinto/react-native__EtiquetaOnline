@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, FlatList, Modal, Image, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, FlatList, Modal, Image, StatusBar, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import InfoItem from './InfoItens';
 import StorageManager from './StorageManager';
@@ -13,7 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 
 const StartScreen = () => {
-    const [kmMain, setKmMain] = useState('10000')
+    const [kmMain, setKmMain] = useState('00000')
     const [nextRepair, setNextRepair] = useState(null);
     const [nextRepair20000, setNextRepair20000] = useState(null);
     const [nextRepair50000, setNextRepair50000] = useState(null);
@@ -22,6 +22,27 @@ const StartScreen = () => {
     const [maintenanceInterval10000, setMaintenanceInterval10000] = useState(10000);
     const [maintenanceInterval20000, setMaintenanceInterval20000] = useState(20000);
     const [maintenanceInterval50000, setMaintenanceInterval50000] = useState(50000);
+    const [filteredRepairItems, setFilteredRepairItems] = useState([]);
+
+    const resetApp = () => {
+        setKmMain('0');
+        setNextRepair(null);
+        setNextRepair20000(null);
+        setNextRepair50000(null);
+    };
+    // Função para lidar com o pressionamento do botão de reset
+    const handleResetPress = () => {
+        Alert.alert(
+            'Reiniciar os Dados',
+            'Você quer Reiniciar o App?',
+            [
+                { text: 'CANCELAR', style: 'cancel' },
+                { text: 'Sim', onPress: () => resetApp() }
+            ],
+            { cancelable: false }
+        );
+    };
+
 
     const repairItems = [
         { id: '1', iconType: 'image', icon: require('../images/indicador-de-oleo.png'), title: 'Óleo do Motor', subtitle: `Próxima Revisão: ${nextRepair} km` },
@@ -58,61 +79,81 @@ const StartScreen = () => {
     const renderItem = ({ item }) => {
         const repairKm = parseInt(kmMain, 10);
         let borderColor = {};
-        let repairValue;
+        let repairValue; subtitle;
         switch (item.title) {
             case 'Óleo do Motor':
             case 'Filtro de Óleo':
             case 'Filtro de Combustível':
             case 'Geometria':
             case 'Balanceamento':
-                repairValue = parseInt(nextRepair, 10);
+                repairValue = nextRepair;
+                subtitle = `Próxima Revisão: ${nextRepair} km`;
                 break;
             case 'Filtro de Cabine':
             case 'Filtro de Ar':
-                repairValue = parseInt(nextRepair20000, 10);
+                repairValue = nextRepair20000;
+                subtitle = `Próxima Revisão: ${nextRepair20000} km`;
                 break;
             case 'Fluído de Transmissão':
-                repairValue = parseInt(nextRepair50000, 10);
+                repairValue = nextRepair50000;
+                subtitle = `Próxima Revisão: ${nextRepair50000} km`;
                 break;
         }
-
         if (repairKm >= repairValue) {
             borderColor = { borderWidth: 2, borderColor: '#F44F28' };
             sendNotification(item.title);
         }
-
-        const resetItem = () => {
-            if (['Óleo do Motor', 'Filtro de Óleo', 'Filtro de Combustível', 'Geometria', 'Balanceamento'].includes(item.title)) {
-                setNextRepair(null);
-            }
-            else if (['Filtro de Ar', 'Filtro de Cabine'].includes(item.title)) {
-                setNextRepair20000(null);
-            }
-            else if (item.title === 'Fluído de Transmissão') {
-                setNextRepair50000(null);
-            }
-
-        };
-
         return (
             <InfoItem
                 key={item.id}
                 icon={item.icon}
                 title={item.title}
-                subtitle={item.subtitle}
+                subtitle={subtitle}
                 iconType={item.iconType}
                 style={borderColor}
-                onReset={resetItem}
+                onReset={() => resetItem(item.title)}
             />
         )
-
     }
+    const resetItem = (title) => {
+        const newKmMain = parseInt(kmMain, 10);
+
+        if (['Óleo do Motor', 'Filtro de Óleo', 'Filtro de Combustível', 'Geometria', 'Balanceamento'].includes(title) && newKmMain >= nextRepair) {
+            setNextRepair(newKmMain + maintenanceInterval10000);
+        }else if (['Filtro de Ar', 'Filtro de Cabine'].includes(title) && newKmMain >= nextRepair20000) {
+            setNextRepair20000(newKmMain + maintenanceInterval20000);
+        }else if (title === 'Fluído de Transmissão' && newKmMain >= nextRepair50000) {
+            setNextRepair50000(newKmMain + maintenanceInterval50000);
+        }else {
+            Alert.alert(
+                'Confirmar Revisão?',
+                'O novo valor do Hodômetro é inferior ao atual. Você quer Redefinir?',
+                [
+                    { text: 'CANCELAR', style: 'cancel' },
+                    { text: 'Sim', onPress: () => handleResetConfirmation(title) }
+                ],
+                { cancelable: false }
+            );
+        }
+    };
+    const handleResetConfirmation = (title) => {
+        const newKmMain = parseInt(kmMain, 10);
+    
+        if (['Óleo do Motor', 'Filtro de Óleo', 'Filtro de Combustível', 'Geometria', 'Balanceamento'].includes(title)) {
+            setNextRepair(newKmMain + maintenanceInterval10000);
+        } else if (['Filtro de Ar', 'Filtro de Cabine'].includes(title)) {
+            setNextRepair20000(newKmMain + maintenanceInterval20000);
+        } else if (title === 'Fluído de Transmissão') {
+            setNextRepair50000(newKmMain + maintenanceInterval50000);
+        }
+    };
+
 
     useEffect(() => {
         onDataRetrieved(kmMain);
     }, [kmMain, nextRepair, nextRepair20000, nextRepair50000]);
 
-    {/*useEffect(() => {
+    useEffect(() => {
         const loadMaintenanceInterval = async () => {
             try {
                 const interval10000 = await AsyncStorage.getItem('maintenanceInterval10000');
@@ -137,27 +178,26 @@ const StartScreen = () => {
         };
 
         loadMaintenanceInterval();
-    }, []);*/}
+    }, []);
 
     useFocusEffect(
         React.useCallback(() => {
-        const loadMaintenanceInterval = async () => {
-            try {
-                const interval10000 = await AsyncStorage.getItem('maintenanceInterval10000');
-                const interval20000 = await AsyncStorage.getItem('maintenanceInterval20000');
-                const interval50000 = await AsyncStorage.getItem('maintenanceInterval50000');
+            const loadMaintenanceInterval = async () => {
+                try {
+                    const interval10000 = await AsyncStorage.getItem('maintenanceInterval10000');
+                    const interval20000 = await AsyncStorage.getItem('maintenanceInterval20000');
+                    const interval50000 = await AsyncStorage.getItem('maintenanceInterval50000');
 
-                setMaintenanceInterval10000(interval10000 ? parseInt(interval10000, 10) : 10000);
-                setMaintenanceInterval20000(interval20000 ? parseInt(interval20000, 10) : 20000);
-                setMaintenanceInterval50000(interval50000 ? parseInt(interval50000, 10) : 50000);
-            } catch (e) {
-                alert('Falha ao carregar o intervalo de manutenção');
-            }
-        };
-        loadMaintenanceInterval()
-        return () => {
-        ;}
-    }, []));
+                    setMaintenanceInterval10000(interval10000 ? parseInt(interval10000, 10) : 10000);
+                    setMaintenanceInterval20000(interval20000 ? parseInt(interval20000, 10) : 20000);
+                    setMaintenanceInterval50000(interval50000 ? parseInt(interval50000, 10) : 50000);
+                } catch (e) {
+                    alert('Falha ao carregar o intervalo de manutenção');
+                }
+
+            };
+            loadMaintenanceInterval()
+        }, []));
 
     const onDataRetrieved = (data) => {
         setKmMain(data);
@@ -171,9 +211,18 @@ const StartScreen = () => {
             setNextRepair50000(parseInt(data) + maintenanceInterval50000);
         }
 
-        //console.log('Os dados em onDataRetrieved é: ', data);
+        console.log('Os dados em onDataRetrieved é: ', data);
+        console.log('Os dados em NextRepair é: ', nextRepair);
     };
 
+    const OdometroUpdate = async () => {
+        let newData = inputValue;
+        setModalVisible(false);
+        setInputValue("");
+        setKmMain(newData);
+        await AsyncStorage.setItem('myKey', newData);
+        onDataRetrieved(newData);
+    }
     const renderDigits = () => {
         return kmMain ? kmMain.split('').map((digit, index, array) => {
             const isLastDigit = index === array.length - 1; // Verifica se é o último dígito
@@ -192,19 +241,25 @@ const StartScreen = () => {
             );
         }) : null;
     };
-
     const showModal = () => {
         setModalVisible(true);
     };
+    useEffect(() => {
+        const loadSelectedItems = async () => {
+            try {
+                const storedSelectedItems = await AsyncStorage.getItem('visibleItemIds');
+                const selectedItems = storedSelectedItems ? JSON.parse(storedSelectedItems) : [];
+                const filteredItems = repairItems.filter(item => selectedItems.includes(item.id));
+                setFilteredRepairItems(filteredItems);
+            } catch (error) {
+                console.log("Erro ao carregar itens selecionados:", error);
+            }
+        };
 
-    const OdometroUpdate = async () => {
-        let newData = inputValue;
-        setModalVisible(false);
-        setInputValue("");
-        setKmMain(newData);
-        await AsyncStorage.setItem('myKey', newData);
-        onDataRetrieved(newData);
-    }
+        loadSelectedItems();
+    }, []);
+
+
 
     return (
         <>
@@ -244,12 +299,15 @@ const StartScreen = () => {
                                 {renderDigits()}
                             </View>
                         </TouchableOpacity>
-                        
                     </View>
-                    <Text style={{ color: '#FFF', fontSize: 12, marginBottom: '1%' }}>hodômetro</Text>
+                    <TouchableOpacity style={styles.btnReset} onPress={handleResetPress}>
+                        <FontAwesome5 name="sync" size={13} color={'#f44f24'} />
+                        <Text style={{textAlign: 'center', color: '#FFF', fontSize: 8}}>Reset</Text>
+                    </TouchableOpacity>
+                    <Text style={{ color: '#FFF', fontSize: 12, marginBottom: '1%' }}>Hodômetro</Text>
                 </View>
                 <FlatList
-                    data={repairItems}
+                    data={filteredRepairItems}
                     keyExtractor={item => item.id.toString()}
                     renderItem={renderItem}
                     showsVerticalScrollIndicator={false}
@@ -344,6 +402,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         marginLeft: 3,
     },
+    btnReset: {
+        position: 'absolute',
+        right: 10,
+        bottom: 40,
+        textAlign: 'center',
+        alignItems:'center'
+    }
 });
 
 export default StartScreen;
