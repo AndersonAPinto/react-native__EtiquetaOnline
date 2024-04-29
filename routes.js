@@ -53,8 +53,8 @@ function TabNavigator() {
             options={{
                 headerShown: false,
                 tabBarIcon: ({ focused }) => {
-                    return focused ? <Image source={require('./src/images/servico.png')} style={{ width: 45, height: 45, borderRadius: 10, borderWidth: 2, borderColor: 'yellow' }} />
-                        : <Image source={require('./src/images/servico.png')} style={{ width: 45, height: 45, }} />;
+                    return focused ? <Image source={require('./src/images/simbolo-de-informacao.png')} style={{ width: 45, height: 45, borderRadius: 10, borderWidth: 2, borderColor: 'yellow' }} />
+                        : <Image source={require('./src/images/simbolo-de-informacao.png')} style={{ width: 45, height: 45, }} />;
                 }
             }}
         />
