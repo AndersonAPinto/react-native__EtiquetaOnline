@@ -9,21 +9,12 @@ const InfoItem = ({ iconType, icon, title, subtitle, style, onReset }) => {
             <View style={styles.detail}>
                 <FontAwesome5 name="bars" size={10} color="#1d3a88" />
             </View>
-            {/*{iconType === 'fontAwesome' && (
-                <FontAwesome5
-                    name={icon}
-                    size={40}
-                    color={'#F44F28'}
-                    style={{ position: 'absolute', left: 35 }}
-                />
-            )}*/}
             {iconType === 'image' && (
                 <Image
                     source={icon}
                     style={{ width: 40, height: 40, position: 'absolute', left: 35 }}
                 />
             )}
-
             <View style={{ marginLeft: 60 }}>
                 <Text style={{ color: '#FFF', fontSize: 20 }}>{title}</Text>
                 <Text style={{ color: '#868b99', fontSize: 15 }}>{subtitle}</Text>
@@ -37,16 +28,14 @@ const InfoItem = ({ iconType, icon, title, subtitle, style, onReset }) => {
 
 const styles = StyleSheet.create({
     painelItem: {
-        width: 335,
+        width: '100%',
         height: 85,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 20,
         backgroundColor: '#10214e',
         flexDirection: 'row',
-        paddingRight: 0,
         marginBottom: 1,
-        margin: 0,
 
     },
     detail: {

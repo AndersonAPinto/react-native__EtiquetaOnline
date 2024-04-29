@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "#10214e",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -23,8 +23,8 @@
         "backgroundColor": "#10214e"
       },
       "package": "com.aasp.oficinaOnline",
-      "notification": { 
-        "icon": "./assets/notification-icon.png", 
+      "notification": {
+        "icon": "./assets/notification-icon.png",
         "color": "#10214e",
         "sound": "./music/mixkit-clear-announce-tones-2861.wav"
       }
@@ -34,7 +34,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "b17abc79-6698-4c10-9ae0-db3155a23ca0"
+        "projectId": "5b9354c5-82ce-4ac7-b8fb-3255f6bc56e7"
       }
     }
   }
